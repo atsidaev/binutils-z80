@@ -49,6 +49,16 @@ HOWTO (R_IMM8, 0, 0, 8, FALSE, 0,
        complain_overflow_bitfield, 0, "r_imm8", TRUE, 0x000000ff, 0x000000ff,
        FALSE);
 
+static reloc_howto_type r_imm8hi =
+HOWTO (R_HI8, 0, 0, 8, FALSE, 0,
+       complain_overflow_bitfield, 0, "r_imm8hi", TRUE, 0x000000ff, 0x000000ff,
+       FALSE);
+       
+static reloc_howto_type r_imm8lo =
+HOWTO (R_LO8, 0, 0, 8, FALSE, 0,
+       complain_overflow_bitfield, 0, "r_imm8lo", TRUE, 0x000000ff, 0x000000ff,
+       FALSE);
+
 static reloc_howto_type r_jr =
 HOWTO (R_JR, 0, 0, 8, TRUE, 0, 
        complain_overflow_signed, 0, "r_jr", FALSE, 0, 0xFF,
@@ -83,6 +93,12 @@ rtype2howto (arelent *internal, struct internal_reloc *dst)
     default:
       abort ();
       break;
+    case R_HI8:
+      internal->howto = &r_imm8hi;
+      break;
+    case R_LO8:
+      internal->howto = &r_imm8lo;
+      break;
     case R_IMM8:
       internal->howto = &r_imm8;
       break;
@@ -113,6 +129,8 @@ coff_z80_reloc_type_lookup (bfd *abfd ATTRIBUTE_UNUSED,
   switch (code)
     {
     case BFD_RELOC_8:		return & r_imm8;
+    case BFD_RELOC_M68HC11_HI8:		return & r_imm8hi;
+    case BFD_RELOC_M68HC11_LO8:		return & r_imm8lo;
     case BFD_RELOC_16:		return & r_imm16;
     case BFD_RELOC_24:		return & r_imm24;
     case BFD_RELOC_32:		return & r_imm32;
@@ -210,11 +228,27 @@ extra_case (bfd *in_abfd,
       break;
 
     case R_IMM16:
-      val = bfd_get_16 ( in_abfd, data+*src_ptr)
+      val = bfd_get_8 ( in_abfd, data+*src_ptr)
 	+ bfd_coff_reloc16_get_value (reloc, link_info, input_section);
       bfd_put_16 (in_abfd, val, data + *dst_ptr);
       (*dst_ptr) += 2;
       (*src_ptr) += 2;
+      break;
+
+    case R_HI8:
+      val = bfd_get_8 ( in_abfd, data+*src_ptr)
+	+ bfd_coff_reloc16_get_value (reloc, link_info, input_section);
+      bfd_put_8 (in_abfd, val >> 8, data + *dst_ptr);
+      (*dst_ptr) += 1;
+      (*src_ptr) += 1;
+      break;
+
+    case R_LO8:
+      val = bfd_get_16 ( in_abfd, data+*src_ptr)
+	+ bfd_coff_reloc16_get_value (reloc, link_info, input_section);
+      bfd_put_8 (in_abfd, val & 0xFF, data + *dst_ptr);
+      (*dst_ptr) += 1;
+      (*src_ptr) += 1;
       break;
 
     case R_IMM24:

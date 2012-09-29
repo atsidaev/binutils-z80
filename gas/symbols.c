@@ -1316,6 +1316,14 @@ resolve_symbol_value (symbolS *symp)
 
 	  /* Simplify addition or subtraction of a constant by folding the
 	     constant into X_add_number.  */
+	  if ((op == O_right_shift && right == 8) || (op == O_divide && right == 256))
+	  {
+		symp->sy_value.X_op = O_symbol;
+		symp->sy_value.X_add_number = 0;
+		resolved = 1;
+		goto exit_dont_set_value;
+	  }
+	  
 	  if (op == O_add)
 	    {
 	      if (seg_right == absolute_section)

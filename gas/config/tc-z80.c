@@ -699,8 +699,30 @@ emit_byte (expressionS * val, bfd_reloc_code_real_type r_type)
     }
   else
     {
-      fixp = fix_new_exp (frag_now, p - frag_now->fr_literal, 1, val,
-			  (r_type == BFD_RELOC_8_PCREL) ? TRUE : FALSE, r_type);
+      if (r_type == BFD_RELOC_8)
+      {
+		if (val->X_op != O_symbol)
+		{
+			offsetT right;
+			right = resolve_symbol_value (val->X_op_symbol);
+			
+			if (val->X_op == O_right_shift && right == 8)
+			{
+				fix_new_exp (frag_now, p - frag_now->fr_literal, 1, val,
+				  FALSE, /*r_type*/ BFD_RELOC_M68HC11_HI8);
+				return;
+			}
+
+			if (val->X_op == O_divide && right == 256)
+			{
+				fix_new_exp (frag_now, p - frag_now->fr_literal, 1, val,
+				  FALSE, /*r_type*/ BFD_RELOC_M68HC11_LO8);
+				return;
+			}
+		}
+	  }
+		fixp = fix_new_exp (frag_now, p - frag_now->fr_literal, 1, val,
+			(r_type == BFD_RELOC_8_PCREL) ? TRUE : FALSE, r_type);
       /* FIXME : Process constant offsets immediately.  */
     }
 }
@@ -719,9 +741,9 @@ emit_word (expressionS * val)
       *p = val->X_add_number;
       p[1] = (val->X_add_number>>8);
       if (val->X_op != O_constant)
-	fix_new_exp (frag_now, p - frag_now->fr_literal, 2,
-		     val, FALSE, BFD_RELOC_16);
-    }
+			fix_new_exp (frag_now, p - frag_now->fr_literal, 2,
+				val, FALSE, BFD_RELOC_16);
+	  }
 }
 
 static void
@@ -1959,6 +1981,8 @@ md_apply_fix (fixS * fixP, valueT* valP, segT seg ATTRIBUTE_UNUSED)
         }
       break;
 
+	case BFD_RELOC_M68HC11_HI8:
+	case BFD_RELOC_M68HC11_LO8:
     case BFD_RELOC_8:
       if (val > 255 || val < -128)
 	as_warn_where (fixP->fx_file, fixP->fx_line, _("overflow"));

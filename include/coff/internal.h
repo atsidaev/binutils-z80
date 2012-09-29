@@ -794,6 +794,8 @@ struct internal_reloc
 /* Z80 modes */
 #define R_OFF8    0x32		/* 8 bit signed abs, for (i[xy]+d) */
 #define R_IMM24   0x33          /* 24 bit abs */
+#define R_HI8     0x34		/* High byte of 16-bit address */
+#define R_LO8     0x35		/* Low byte of 16-bit address */
 /* R_JR, R_IMM8, R_IMM16, R_IMM32 - as for Z8k */
 
 /* H8500 modes */
