@@ -676,7 +676,7 @@ emit_byte (expressionS * val, bfd_reloc_code_real_type r_type)
 {
   char *p;
   int lo, hi;
-  fixS * fixp;
+  // fixS * fixp;
 
   p = frag_more (1);
   *p = val->X_add_number;
@@ -721,7 +721,7 @@ emit_byte (expressionS * val, bfd_reloc_code_real_type r_type)
 			}
 		}
 	  }
-		fixp = fix_new_exp (frag_now, p - frag_now->fr_literal, 1, val,
+		fix_new_exp (frag_now, p - frag_now->fr_literal, 1, val,
 			(r_type == BFD_RELOC_8_PCREL) ? TRUE : FALSE, r_type);
       /* FIXME : Process constant offsets immediately.  */
     }
